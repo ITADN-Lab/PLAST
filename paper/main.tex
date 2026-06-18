@@ -185,11 +185,6 @@ Adam & 45.3 & 59 \\
 \end{table}
 Table~\ref{tab:rank} isolates the representational-rank axis. Adam's representation collapses (rank $59$); AdamO's isometry penalty, \emph{at its best-tuned strength}, raises it to $107$; Muon, with no plasticity regularization at all, maintains rank $167$---well above AdamO's best---and Muon$+$RP $175$. Because Muon's update is orthogonalized every step, it does not collapse the update spectrum the way an adaptive preconditioner does, which \emph{permits}---and, empirically, yields---a higher-rank representation. Crucially (Table~\ref{tab:dissoc}), this higher rank is \emph{not} accompanied by better NTK conditioning---AdamO's kernel is better conditioned---so the rank, not the kernel, is what co-varies with plasticity.
 
-\begin{figure}[t]\centering
-\includegraphics[width=0.82\linewidth]{fig_rank_acc.png}
-\caption{\textbf{Effective rank predicts plasticity.} Per-task accuracy versus penultimate effective rank, one point per (method, seed, task)---$250$ points (CIFAR-100). The two are strongly correlated ($r{=}0.73$), and the relationship is not merely between-method: the average \emph{within}-method (per-stream) correlation is $+0.44$, so a method's rank at a given task tracks the accuracy it achieves there. Muon configurations occupy the high-rank, high-accuracy corner with no plasticity regularizer.}
-\label{fig:rankacc}
-\end{figure}
 Figure~\ref{fig:rankacc} establishes this at the task level, not just across method means: pooling one point per (method, seed, task) gives $250$ points with $r{=}0.73$, and---controlling for method identity---the average within-stream correlation is still $+0.44$. Rank therefore predicts plasticity both across and within methods, well beyond a small-sample between-method artifact. Muon and Muon$+$RP sit at the favorable extreme, reached without any plasticity-specific objective.
 
 \paragraph{Rank grows, rather than merely surviving.} A closer look at Figure~\ref{fig:ranktraj} reveals a qualitative difference, not just a quantitative one. Adam's effective rank starts near $58$ and stays there or drifts down---its representation never expands. Muon's, by contrast, \emph{rises} over the first few tasks (from ${\sim}44$ at initialization to ${\sim}167$) and then holds. This is the signature of full-rank increments accumulating: because each orthogonalized step (Prop.~\ref{prop:iso}) injects energy into all directions of the weight space, the representation progressively fills out the available dimensions rather than collapsing onto the subspace selected by the first task. An adaptive preconditioner does the opposite---it amplifies the directions already favored early in training, which is precisely the mechanism of primacy bias and rank collapse documented in the plasticity literature. The orthogonalizing optimizer is thus not merely resisting collapse; it is actively counteracting the subspace concentration that causes it.
@@ -265,6 +260,11 @@ Loss of plasticity has been attacked by resetting representations and by regular
 \clearpage
 \appendix
 \section{Additional Figures}
+\begin{figure}[h]\centering
+\includegraphics[width=0.78\linewidth]{fig_rank_acc.png}
+\caption{\textbf{Effective rank predicts plasticity.} Per-task accuracy vs.\ penultimate effective rank, one point per (method, seed, task)---$250$ points (CIFAR-100), $r{=}0.73$; within-method average $+0.44$. As \S\ref{sec:scope} notes, this is driven by separating the collapsed optimizer (Adam) from the rest---rank does not separate the strong optimizers from each other.}
+\label{fig:rankacc}
+\end{figure}
 \begin{figure}[h]\centering
 \includegraphics[width=0.92\linewidth]{fig_curves.png}
 \caption{\textbf{Plasticity over the task stream} (CIFAR-100). Online accuracy per task. Adam (red) degrades over the stream (loss of plasticity); Muon-based methods (blue, green) \emph{improve} and sustain high accuracy, staying well above AdamO at its best $\lambda$ (purple) throughout.}
